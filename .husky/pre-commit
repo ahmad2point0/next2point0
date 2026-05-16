@@ -1,1 +1,2 @@
 bunx lint-staged
+SKIP_ENV_VALIDATION=1 bun run typecheck && SKIP_ENV_VALIDATION=1 bun run build

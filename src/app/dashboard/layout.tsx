@@ -1,7 +1,13 @@
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { AppHeader } from "@/global/components/shared/AppHeader";
 import { Sidebar } from "@/global/components/shared/Sidebar";
+import { ROUTES } from "@/global/constants";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  if (!session?.user) redirect(ROUTES.login);
+
   return (
     <div className="flex min-h-screen flex-col">
       <AppHeader />

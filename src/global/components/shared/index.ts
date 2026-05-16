@@ -3,6 +3,7 @@ export { AppHeader } from "./AppHeader";
 export { Footer } from "./Footer";
 export { Loader } from "./Loader";
 export { ThemeToggle } from "./ThemeToggle";
+export { UserMenu } from "./UserMenu";
 export { EmptyState } from "./EmptyState";
 export { ErrorState } from "./ErrorState";
 export { PageHeader } from "./PageHeader";

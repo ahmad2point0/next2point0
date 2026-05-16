@@ -1,18 +1,15 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { authService } from "../services/auth.service";
-import { useAuthStore } from "@/global/store";
-import type { RegisterDto } from "../@types/auth.dto";
-import type { AuthResponse } from "../@types/auth.response";
+import { registerAction } from "../actions/auth.action";
+import type { RegisterInput } from "../utils/authValidator";
 
 export function useRegister() {
-  const setUser = useAuthStore((state) => state.setUser);
-
-  return useMutation<AuthResponse, Error, RegisterDto>({
-    mutationFn: (dto) => authService.register(dto),
-    onSuccess: (response) => {
-      setUser(response.user);
+  return useMutation<{ ok: true }, Error, RegisterInput>({
+    mutationFn: async (input) => {
+      const result = await registerAction(input);
+      if (!result.ok) throw new Error(result.message);
+      return { ok: true };
     },
   });
 }

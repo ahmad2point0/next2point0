@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Github } from "lucide-react";
+import { auth } from "@/auth";
 import { Button } from "@/global/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
+import { UserMenu } from "./UserMenu";
 import { ROUTES } from "@/global/constants";
 import { siteConfig } from "@/global/config";
 
@@ -10,7 +12,10 @@ const NAV_LINKS = [
   { href: ROUTES.dashboard, label: "Dashboard" },
 ] as const;
 
-export function AppHeader() {
+export async function AppHeader() {
+  const session = await auth();
+  const user = session?.user;
+
   return (
     <header className="border-border/40 bg-background/80 supports-backdrop-filter:bg-background/60 sticky top-0 z-40 w-full border-b backdrop-blur">
       <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
@@ -43,9 +48,17 @@ export function AppHeader() {
             </a>
           </Button>
           <ThemeToggle />
-          <Button asChild size="sm" className="hidden sm:inline-flex">
-            <Link href={ROUTES.login}>Sign in</Link>
-          </Button>
+          {user ? (
+            <UserMenu
+              name={user.name ?? user.email ?? "Account"}
+              email={user.email ?? ""}
+              imageUrl={user.image}
+            />
+          ) : (
+            <Button asChild size="sm" className="hidden sm:inline-flex">
+              <Link href={ROUTES.login}>Sign in</Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>

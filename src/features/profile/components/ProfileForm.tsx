@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@/global/components/ui/form";
 import { profileSchema, type ProfileInput } from "../utils/profileValidator";
+import { updateProfileAction } from "../actions/profile.action";
 
 interface ProfileFormProps {
   defaultValues?: Partial<ProfileInput>;
@@ -33,7 +34,11 @@ export function ProfileForm({ defaultValues }: ProfileFormProps) {
   });
 
   const onSubmit = async (values: ProfileInput) => {
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    const result = await updateProfileAction(values);
+    if (!result.ok) {
+      toast.error(result.message);
+      return;
+    }
     toast.success("Profile updated");
     form.reset(values);
   };

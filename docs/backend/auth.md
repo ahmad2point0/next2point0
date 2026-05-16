@@ -4,18 +4,20 @@ Auth.js v5 (NextAuth) with the Prisma adapter, JWT session strategy, Credentials
 
 ## File map
 
-| File                                      | Purpose                                                                      |
-| ----------------------------------------- | ---------------------------------------------------------------------------- |
-| `src/auth.config.ts`                      | Edge-safe config: pages, callbacks, authorized rule. Imported by middleware. |
-| `src/auth.ts`                             | Full server-only config with providers + adapter. Exports `auth`, `signIn`.  |
-| `src/middleware.ts`                       | Runs `auth.config` on every request. Protects `/dashboard/**`.               |
-| `src/app/api/auth/[...nextauth]/route.ts` | Auth.js HTTP handlers.                                                       |
+| File                                      | Purpose                                                                     |
+| ----------------------------------------- | --------------------------------------------------------------------------- |
+| `src/auth.config.ts`                      | Edge-safe config: pages, callbacks, authorized rule. Imported by proxy.     |
+| `src/auth.ts`                             | Full server-only config with providers + adapter. Exports `auth`, `signIn`. |
+| `src/proxy.ts`                            | Runs `auth.config` on every request. Protects `/dashboard/**`. (Next 16+)   |
+| `src/app/api/auth/[...nextauth]/route.ts` | Auth.js HTTP handlers.                                                      |
 
 ## Why two configs
 
-`middleware.ts` runs at the edge. Edge runtimes don't have `bcrypt`, `prisma`, or the Node crypto module. So `auth.config.ts` only contains the bits that work everywhere (callbacks, page routes). `auth.ts` adds the providers and the adapter and is only imported from server code (route handlers, server actions, server components).
+`proxy.ts` runs at the edge. Edge runtimes don't have `bcrypt`, `prisma`, or the Node crypto module. So `auth.config.ts` only contains the bits that work everywhere (callbacks, page routes). `auth.ts` adds the providers and the adapter and is only imported from server code (route handlers, server actions, server components).
 
-If you put `bcrypt` in `auth.config.ts` the dev server will crash when the middleware tries to load.
+If you put `bcrypt` in `auth.config.ts` the dev server will crash when the proxy tries to load.
+
+> Note: Next.js called this file `middleware.ts` before version 16. It is the same idea, just renamed to `proxy.ts`. Same edge runtime, same matcher config, same use cases.
 
 ## Sign in flow
 
@@ -24,7 +26,7 @@ If you put `bcrypt` in `auth.config.ts` the dev server will crash when the middl
 3. `loginAction` validates with `loginSchema`, then calls `signIn("credentials", ...)`.
 4. The Credentials provider's `authorize` callback looks up the user by email, compares password hash with `bcrypt.compare`, and returns the user shell.
 5. Auth.js issues a JWT session cookie.
-6. The form pushes the user to `/dashboard`. Middleware allows the navigation because the session is now present.
+6. The form pushes the user to `/dashboard`. The proxy allows the navigation because the session is now present.
 
 ## Sign up flow
 
@@ -50,7 +52,7 @@ The GitHub OAuth callback URL you give GitHub is `${AUTH_URL}/api/auth/callback/
 
 ## Protecting a route
 
-Middleware already protects `/dashboard/**`. For finer-grained checks:
+The proxy already protects `/dashboard/**`. For finer-grained checks:
 
 ```tsx
 import { redirect } from "next/navigation";
@@ -64,7 +66,7 @@ export default async function AdminPage() {
 }
 ```
 
-To extend the matcher, edit `middleware.ts`:
+To extend the matcher, edit `proxy.ts`:
 
 ```ts
 export const config = {
@@ -72,7 +74,7 @@ export const config = {
 };
 ```
 
-The default matcher runs middleware on all routes except static assets and the auth API.
+The default matcher runs the proxy on all routes except static assets and the auth API.
 
 ## Sign out
 

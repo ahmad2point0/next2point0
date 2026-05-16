@@ -4,7 +4,7 @@ Three layers of protection. Use the one closest to where you can decide.
 
 ## 1. Middleware (route-level)
 
-`src/middleware.ts` runs on every request. The `authorized` callback in `auth.config.ts` returns `false` for an unauthenticated user on `/dashboard/**`, which redirects them to `/login`.
+`src/proxy.ts` (called `middleware.ts` before Next 16) runs on every request. The `authorized` callback in `auth.config.ts` returns `false` for an unauthenticated user on `/dashboard/**`, which redirects them to `/login`.
 
 ```ts
 // src/auth.config.ts
@@ -18,7 +18,7 @@ authorized({ auth, request: { nextUrl } }) {
 
 This is the cheapest check. It runs at the edge and short-circuits before any page code loads.
 
-Extend the matcher in `middleware.ts` if you have more protected sections:
+Extend the matcher in `proxy.ts` if you have more protected sections:
 
 ```ts
 export const config = {
@@ -28,7 +28,7 @@ export const config = {
 
 ## 2. Layout-level (`auth()`)
 
-For double-checking after middleware, or for sections that need session data anyway, use `auth()` in the layout:
+For double-checking after the proxy, or for sections that need session data anyway, use `auth()` in the layout:
 
 ```tsx
 // src/app/dashboard/layout.tsx
@@ -65,17 +65,17 @@ async list(): Promise<Project[]> {
 }
 ```
 
-This is the most important layer. Even if someone bypasses middleware and the layout — by hitting a server action with a forged request — the service rejects it.
+This is the most important layer. Even if someone bypasses the proxy and the layout — by hitting a server action with a forged request — the service rejects it.
 
 ## Why all three
 
 | Layer      | Catches                                          | Performance cost         |
 | ---------- | ------------------------------------------------ | ------------------------ |
 | Middleware | Unauthenticated navigations                      | Edge, near zero          |
-| Layout     | Edge cases where middleware can't redirect       | One `auth()` call        |
+| Layout     | Edge cases where the proxy can't redirect        | One `auth()` call        |
 | Service    | Direct server action calls, missing route checks | One `auth()` call per op |
 
-Skipping the service layer is the most dangerous: a forgotten route or a typo in the middleware matcher silently exposes data. Service-level is the floor.
+Skipping the service layer is the most dangerous: a forgotten route or a typo in the proxy matcher silently exposes data. Service-level is the floor.
 
 ## Role-based access
 

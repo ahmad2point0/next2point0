@@ -29,9 +29,9 @@ prisma/
 └── seed.ts               Seed script
 
 src/
-├── auth.config.ts        Edge-safe Auth.js config (used by middleware)
+├── auth.config.ts        Edge-safe Auth.js config (used by proxy)
 ├── auth.ts               Full Auth.js config with providers (server-only)
-├── middleware.ts         Protected-route middleware
+├── proxy.ts              Protected-route proxy (Next 16: replaces middleware.ts)
 ├── app/api/
 │   ├── auth/[...nextauth]/route.ts    Auth.js handlers
 │   └── health/route.ts                /api/health
@@ -69,7 +69,7 @@ Client Form (RHF + Zod)
 ## Auth rules
 
 - **Read the session** via `await auth()` from `@/auth` in server components, actions, and services.
-- **`middleware.ts` already protects `/dashboard/**`** via the `authorized`callback in`auth.config.ts`. Don't duplicate per-page session checks unless you need granular logic.
+- **`proxy.ts` already protects `/dashboard/**`** via the `authorized`callback in`auth.config.ts`. Don't duplicate per-page session checks unless you need granular logic.
 - **`auth.config.ts` is edge-safe.** It cannot import `bcrypt`, `prisma`, or other Node-only modules. The full provider list with credential checks lives in `auth.ts`.
 - **`auth.ts` is server-only.** Never import it into a client component.
 - **Add a provider**: add to the `providers` array in `auth.ts`. Add its env vars to `env.server.ts`. Document in `.env.example`.

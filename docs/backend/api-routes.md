@@ -69,4 +69,4 @@ STRIPE_WEBHOOK_SECRET: z.string().min(16),
 
 ## CORS
 
-Next.js does not enable CORS by default. If a non-browser client (mobile app on a different origin) needs to hit your API, set headers in the route handler or use the `middleware.ts` matcher with a CORS preflight handler.
+Next.js does not enable CORS by default. If a non-browser client (mobile app on a different origin) needs to hit your API, set headers in the route handler or use the `proxy.ts` matcher with a CORS preflight handler.
